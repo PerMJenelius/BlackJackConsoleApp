@@ -1,0 +1,7 @@
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\bin\Debug\ConsoleAppBlackJack.exe.config
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\bin\Debug\ConsoleAppBlackJack.exe
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\bin\Debug\ConsoleAppBlackJack.pdb
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\obj\Debug\ConsoleAppBlackJack.csprojResolveAssemblyReference.cache
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\obj\Debug\ConsoleAppBlackJack.csproj.CoreCompileInputs.cache
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\obj\Debug\ConsoleAppBlackJack.exe
+C:\Projekt\XML\ConsoleAppBlackJack\ConsoleAppBlackJack\obj\Debug\ConsoleAppBlackJack.pdb
