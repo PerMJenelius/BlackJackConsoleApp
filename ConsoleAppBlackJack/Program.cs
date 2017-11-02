@@ -49,8 +49,6 @@ namespace ConsoleAppBlackJack
             PrintTitle();
             PrintPlayerInfo();
             PrintBetAmount();
-
-            Console.ReadKey();
         }
 
         private static void InitializeGame()
@@ -84,6 +82,7 @@ namespace ConsoleAppBlackJack
 
             PrintTitle();
             PrintPlayerInfo();
+            PrintBetAmount();
 
             DealCard(hand.DealerHand, 2);
             PrintDealerHand(hand.DealerHand);
@@ -94,32 +93,50 @@ namespace ConsoleAppBlackJack
         private static void PrintDealerHand(List<Card> inputHand)
         {
             int sum = 0;
-            int aceBonus = 0;
+            int aceCount = 0;
 
-            Console.Write("Dealer has: ");
+            Console.WriteLine("Dealer has:");
 
-            foreach (var card in inputHand)
+            if (inputHand.Count > 2)
             {
-                Console.Write($"{card.Rank} of {card.Suit}");
-                sum += card.Value;
-
-                if (card.Rank == Rank.Ace)
+                for (int i = 0; i < inputHand.Count; i++)
                 {
-                    aceBonus += 10;
+                    Console.Write($"{inputHand[i].Rank} of {inputHand[i].Suit}");
+                    sum += inputHand[i].Value;
+
+                    if (inputHand[i].Rank == Rank.Ace)
+                    {
+                        ++aceCount;
+                    }
+
+                    if (i < (inputHand.Count - 2))
+                    {
+                        Console.Write(", ");
+                    }
+                    else if (i < (inputHand.Count - 1))
+                    {
+                        Console.Write(" and ");
+                    }
                 }
             }
-
-            Console.Write($"({sum}");
-
-            if (aceBonus > 0)
+            else if (inputHand.Count == 2)
             {
-
+                sum = inputHand[0].Value;
+                Console.Write($"{inputHand[0].Rank} of {inputHand[0].Suit} and one in the hole");
             }
 
-            if (inputHand.Count == 1)
+            Console.Write($" ({sum}");
+
+            if (aceCount > 1)
             {
-                Console.Write($" and one unknown card");
+                Console.Write($" or {sum + 20} or {sum + 10}");
             }
+            else if (aceCount > 0)
+            {
+                Console.Write($" or {sum + 10}");
+            }
+
+            Console.Write(")");
         }
 
         private static void RegisterPlayer()
@@ -209,8 +226,8 @@ namespace ConsoleAppBlackJack
             Console.WriteLine("Rules:");
             string rules = File.ReadAllText("C:/Projekt/XML/ConsoleAppBlackJack/rules.txt");
             Console.WriteLine(rules);
-
             Console.ReadKey();
+            Console.Clear();
         }
 
         private static string GetInput()
