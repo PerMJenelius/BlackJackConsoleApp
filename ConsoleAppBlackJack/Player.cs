@@ -6,7 +6,7 @@ namespace ConsoleAppBlackJack
     {
         public int ID { get; set; }
         public string Name { get; set; }
-        public int Bankroll { get; set; }
+        public double Bankroll { get; set; }
         public bool IsActive { get; set; }
         public List<Hand> Hands { get; set; }
 
@@ -14,7 +14,7 @@ namespace ConsoleAppBlackJack
         {
             ID = id;
             Name = name;
-            Bankroll = 1000000;
+            Bankroll = 10000;
             IsActive = false;
             Hands = new List<Hand>();
         }
