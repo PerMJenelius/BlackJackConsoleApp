@@ -8,6 +8,7 @@ namespace ConsoleAppBlackJack
     public class Game
     {
         private static string dataPath = "C:/Projekt/XML/ConsoleAppBlackJack/players.xml";
+        static Stack<Card> deck = new Stack<Card>();
 
         public static int GeneratePlayerId()
         {
@@ -72,11 +73,10 @@ namespace ConsoleAppBlackJack
                 .FirstOrDefault(p => p.Name == inputName);
         }
 
-        public static Stack<Card> ShuffleDeck()
+        public static void ShuffleDeck()
         {
             Random random = new Random();
             List<Card> cardList = new List<Card>();
-            Stack<Card> deck = new Stack<Card>();
             Rank rank = Rank.Ace;
             Suit suit = Suit.Clubs;
 
@@ -108,7 +108,6 @@ namespace ConsoleAppBlackJack
                         case 11: rank = Rank.Queen; break;
                         case 12: rank = Rank.King; break;
                     }
-
                    cardList.Add(new Card(rank, suit));
                 }
             }
@@ -119,8 +118,50 @@ namespace ConsoleAppBlackJack
                 deck.Push(card);
                 cardList.Remove(card);
             } while (cardList.Count > 0);
+        }
 
-            return deck;
+        public static List<Card> DealCard(List<Card> inputHand, int numberOfCards)
+        {
+            for (int i = 0; i < numberOfCards; i++)
+            {
+                inputHand.Add(deck.Pop());
+            }
+
+            return inputHand;
+        }
+
+        public static int EvaluateHand(List<Card> inputHand, bool isDealer)
+        {
+            int sum = 0;
+
+            if (isDealer && inputHand.Count == 2)
+            {
+                sum = inputHand[0].Value;
+            }
+            else
+            {
+                foreach (var card in inputHand)
+                {
+                    sum += card.Value;
+                }
+            }
+
+            return sum;
+        }
+
+        public static int CountAces(List<Card> inputHand)
+        {
+            int sum = 0;
+
+            foreach (var card in inputHand)
+            {
+                if (card.Value == 1)
+                {
+                    ++sum;
+                }
+            }
+
+            return sum;
         }
     }
 }

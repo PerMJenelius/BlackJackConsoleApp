@@ -10,7 +10,6 @@ namespace ConsoleAppBlackJack
     class Program
     {
         static Player player;
-        static Stack<Card> deck;
         static Hand hand;
         static bool running = false;
 
@@ -21,8 +20,27 @@ namespace ConsoleAppBlackJack
             {
                 InitializeGame();
                 AskForBet();
-                DealCards();
+                DealStartingHand();
+                AskForAction();
             } while (running);
+        }
+
+        private static void AskForNewGame()
+        {
+            PrintNewGameMenu();
+
+            switch (GetInput().ToLower())
+            {
+                case "d": running = true; break;
+                default: Quit(); break;
+            }
+        }
+
+        private static void InitializeGame()
+        {
+            PrintTitle();
+            PrintPlayerInfo();
+            AskForNewGame();
         }
 
         private static void AskForBet()
@@ -51,92 +69,30 @@ namespace ConsoleAppBlackJack
             PrintBetAmount();
         }
 
-        private static void InitializeGame()
+        private static void DealStartingHand()
         {
-            PrintTitle();
-            PrintPlayerInfo();
-            AskForNewGame();
-        }
-
-        private static void AskForNewGame()
-        {
-            PrintNewGameMenu();
-
-            switch (GetInput().ToLower())
-            {
-                case "d": running = true; break;
-                default: Quit(); break;
-            }
-        }
-
-        private static void Quit()
-        {
-            Console.Clear();
-            Console.WriteLine("Now exiting game. Hope to see you again soon!");
-            Environment.Exit(1);
-        }
-
-        private static void DealCards()
-        {
-            deck = Game.ShuffleDeck();
+            Game.ShuffleDeck();
 
             PrintTitle();
             PrintPlayerInfo();
             PrintBetAmount();
 
-            DealCard(hand.DealerHand, 2);
-            PrintDealerHand(hand.DealerHand);
-
-            Console.ReadKey();
+            Game.DealCard(hand.DealerHand, 2);
+            Game.DealCard(hand.PlayerHand, 2);
         }
 
-        private static void PrintDealerHand(List<Card> inputHand)
+        private static void AskForAction()
         {
-            int sum = 0;
-            int aceCount = 0;
+            int dealerSum = Game.EvaluateHand(hand.DealerHand, true);
+            int dealerAces = Game.CountAces(hand.DealerHand);
+            PrintHand(hand.DealerHand, dealerSum, dealerAces, true);
 
-            Console.WriteLine("Dealer has:");
+            int playerSum = Game.EvaluateHand(hand.PlayerHand, false);
+            int playerAces = Game.CountAces(hand.PlayerHand);
+            PrintHand(hand.PlayerHand, playerSum, playerAces, false);
 
-            if (inputHand.Count > 2)
-            {
-                for (int i = 0; i < inputHand.Count; i++)
-                {
-                    Console.Write($"{inputHand[i].Rank} of {inputHand[i].Suit}");
-                    sum += inputHand[i].Value;
 
-                    if (inputHand[i].Rank == Rank.Ace)
-                    {
-                        ++aceCount;
-                    }
-
-                    if (i < (inputHand.Count - 2))
-                    {
-                        Console.Write(", ");
-                    }
-                    else if (i < (inputHand.Count - 1))
-                    {
-                        Console.Write(" and ");
-                    }
-                }
-            }
-            else if (inputHand.Count == 2)
-            {
-                sum = inputHand[0].Value;
-                Console.Write($"{inputHand[0].Rank} of {inputHand[0].Suit} and one in the hole");
-            }
-
-            Console.Write($" ({sum}");
-
-            if (aceCount > 1)
-            {
-                Console.Write($" or {sum + 20} or {sum + 10}");
-            }
-            else if (aceCount > 0)
-            {
-                Console.Write($" or {sum + 10}");
-            }
-
-            Console.Write(")");
+            Console.ReadKey();
         }
 
         private static void RegisterPlayer()
@@ -169,6 +125,13 @@ namespace ConsoleAppBlackJack
             } while (!player.IsActive);
         }
 
+        private static void Quit()
+        {
+            Console.Clear();
+            Console.WriteLine("Now exiting game. Hope to see you again soon!");
+            Environment.Exit(1);
+        }
+
         private static Player AskForPlayerName()
         {
             bool playerExists;
@@ -186,14 +149,6 @@ namespace ConsoleAppBlackJack
             else
             {
                 return new Player(Game.GeneratePlayerId(), inputName);
-            }
-        }
-
-        private static void DealCard(List<Card> inputHand, int numberOfCards)
-        {
-            for (int i = 0; i < numberOfCards; i++)
-            {
-                inputHand.Add(deck.Pop());
             }
         }
 
@@ -217,17 +172,6 @@ namespace ConsoleAppBlackJack
                 case "l": Login(); running = true; break;
                 case "s": PrintRules(); break;
             }
-        }
-
-        private static void PrintRules()
-        {
-            PrintTitle();
-            Console.WriteLine();
-            Console.WriteLine("Rules:");
-            string rules = File.ReadAllText("C:/Projekt/XML/ConsoleAppBlackJack/rules.txt");
-            Console.WriteLine(rules);
-            Console.ReadKey();
-            Console.Clear();
         }
 
         private static string GetInput()
@@ -328,6 +272,64 @@ namespace ConsoleAppBlackJack
                 Console.WriteLine("Sorry, you're out of money.");
                 Quit();
             }
+        }
+
+        private static void PrintHand(List<Card> inputHand, int handValue, int acesCount, bool isDealer)
+        {
+            if (isDealer)
+            {
+                Console.WriteLine("Dealer has:");
+            }
+            else
+            {
+                Console.WriteLine("You have:");
+            }
+
+            if ((isDealer && inputHand.Count > 2) | !isDealer)
+            {
+                for (int i = 0; i < inputHand.Count; i++)
+                {
+                    Console.Write($"{inputHand[i].Rank} of {inputHand[i].Suit}");
+
+                    if (i < (inputHand.Count - 2))
+                    {
+                        Console.Write(", ");
+                    }
+                    else if (i < (inputHand.Count - 1))
+                    {
+                        Console.Write(" and ");
+                    }
+                }
+            }
+            else if (isDealer && inputHand.Count == 2)
+            {
+                Console.Write($"{inputHand[0].Rank} of {inputHand[0].Suit} and one in the hole");
+            }
+
+            Console.Write($" ({handValue}");
+
+            if (acesCount == 2)
+            {
+                Console.Write($" or {handValue + 18} or {handValue + 9}");
+            }
+            else if (acesCount == 1)
+            {
+                Console.Write($" or {handValue + 9}");
+            }
+
+            Console.WriteLine(")");
+            Console.WriteLine();
+        }
+
+        private static void PrintRules()
+        {
+            PrintTitle();
+            Console.WriteLine();
+            Console.WriteLine("Rules:");
+            string rules = File.ReadAllText("C:/Projekt/XML/ConsoleAppBlackJack/rules.txt");
+            Console.WriteLine(rules);
+            Console.ReadKey();
+            Console.Clear();
         }
     }
 }
