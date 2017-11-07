@@ -15,8 +15,7 @@ namespace ConsoleAppBlackJack
         public double Bet { get; set; }
         public double TransactionAmount { get; set; }
         public bool Split { get; set; }
-        public bool Double { get; set; }
-        public bool Insurance { get; set; }
+        public bool Stand { get; set; }
 
         public Hand()
         {
@@ -30,8 +29,7 @@ namespace ConsoleAppBlackJack
             Bet = 0;
             TransactionAmount = 0;
             Split = false;
-            Double = false;
-            Insurance = false;
+            Stand = false;
         }
     }
 }

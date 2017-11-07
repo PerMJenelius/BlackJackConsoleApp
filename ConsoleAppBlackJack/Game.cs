@@ -141,19 +141,23 @@ namespace ConsoleAppBlackJack
             return inputHand;
         }
 
-        internal static double CompareHands(Hand hand)
+        internal static double CompareHands(Hand inputHand)
         {
             double output = 0;
 
-            int playerHand = hand.PlayerHandSoftValue <= 21 ? hand.PlayerHandSoftValue : hand.PlayerHandValue;
-            int dealerHand = hand.DealerHandSoftValue <= 21 ? hand.DealerHandSoftValue : hand.DealerHandValue;
+            int playerHand = inputHand.PlayerHandSoftValue <= 21 ? inputHand.PlayerHandSoftValue : inputHand.PlayerHandValue;
+            int dealerHand = inputHand.DealerHandSoftValue <= 21 ? inputHand.DealerHandSoftValue : inputHand.DealerHandValue;
 
-            bool playerBlackjack = hand.PlayerHand.Count == 2 && playerHand == 21 ? true : false;
-            bool dealerBlackjack = hand.DealerHand.Count == 2 && dealerHand == 21 ? true : false;
+            bool playerBlackjack = inputHand.PlayerHand.Count == 2 && playerHand == 21 ? true : false;
+            bool dealerBlackjack = inputHand.DealerHand.Count == 2 && dealerHand == 21 ? true : false;
 
             if (playerBlackjack && !dealerBlackjack)
             {
                 output = 2.5;
+            }
+            else if (dealerBlackjack && !playerBlackjack)
+            {
+                output = 0;
             }
             else if (playerHand > 21)
             {
@@ -212,9 +216,6 @@ namespace ConsoleAppBlackJack
             hand.DealerHandValue = CalculateHandValue(hand.DealerHand);
             hand.PlayerHandSoftValue = hand.PlayerHandValue + CountAces(hand.PlayerHand);
             hand.DealerHandSoftValue = hand.DealerHandValue + CountAces(hand.DealerHand);
-            hand.Double = hand.PlayerHand.Count == 2 ? true : false;
-            hand.Split = hand.PlayerHand.Count == 2 && hand.PlayerHand[0].Rank == hand.PlayerHand[1].Rank ? true : false;
-            hand.Insurance = hand.DealerHand.Count == 1 && hand.DealerHandSoftValue == 11 ? true : false;
 
             return hand;
         }

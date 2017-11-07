@@ -3,12 +3,12 @@
 [3] A hand with only a value-10-card and an ace is known as a blackjack. A blackjack beats all other hands, even those valued 21.
 [4] At the start of a round, each player makes an inital bet of $5, $10, $20, $40 or $80.
 [5] After the initial bets are placed, the dealer deals himself one card, face up. Each player is then dealt two cards in turn, face up.
-[6] After being dealt their hand, each player has a choice to stand, hit, double, or surrender.
+[6] After being dealt their hand, each player has a choice to stand, hit, or double.
 [7] Hitting means being dealt another card, adding it to the value of the hand. A player may hit as many times as they like, unless their hand breaks 21.
 [8] If the value of a hand breaks 21, the hand loses and is discarded. Any bet placed on it is lost.
 [9] Standing means refusing any more cards, waiting for the round to be resolved.
 [10] Doubling means to double one's initial bet, pledging to stand after the next card is dealt.
-[11] Surrendering means to abandon one's hand. Upon surrender, half of the player's bet is returned to them.
+[11] Surrendering (giving up one's stake in return for half of the initial bet) is not allowed.
 [12] If a player is dealt a pair (two cards of the same value) they may choose to split them into two hands. A second bet must be made for the second hand.
 [13] If a player splits a pair of aces, only one more card is dealt to each hand.
 [14] If the dealer's first card is an ace, players may buy insurance. This is a side bet at half the amount of the original bet, that pays out if the dealer's next card gives them a blackjack.
@@ -18,4 +18,4 @@
 [18] Blackjacks pay 3 to 2, meaning an initial bet of $10 would pay $25.
 [19] Insurance bets pay 2 to 1, meaning an inital bet of $10 would pay $30. Insurance bought when the player has a blackjack ("even money") is paid out immediately, with a sum equal to the intial wager.
 [20] If the player's hand and the dealer's hand tie, the bet is returned to the player.
-[21] The deck is shuffled before each new round of play.
+[21] The acrds are dealt from a single deck, which is shuffled before each new round of play.
