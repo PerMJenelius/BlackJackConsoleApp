@@ -46,6 +46,17 @@ namespace ConsoleAppBlackJack
             File.WriteAllText(dataPath, xmlData);
         }
 
+        public static void SaveData(Player player)
+        {
+            List<Player> playerList = LoadPlayerList();
+            Player oldPlayer = playerList
+                .FirstOrDefault(p => p.ID == player.ID);
+            playerList.Remove(oldPlayer);
+            playerList.Add(player);
+            string xmlData = XMLConvert.ObjectToXml(playerList);
+            File.WriteAllText(dataPath, xmlData);
+        }
+
         private static List<Player> LoadPlayerList()
         {
             string xmlData = File.ReadAllText(dataPath);
@@ -108,7 +119,7 @@ namespace ConsoleAppBlackJack
                         case 11: rank = Rank.Queen; break;
                         case 12: rank = Rank.King; break;
                     }
-                   cardList.Add(new Card(rank, suit));
+                    cardList.Add(new Card(rank, suit));
                 }
             }
 
@@ -130,20 +141,51 @@ namespace ConsoleAppBlackJack
             return inputHand;
         }
 
-        public static int EvaluateHand(List<Card> inputHand, bool isDealer)
+        internal static double CompareHands(Hand hand)
+        {
+            double output = 0;
+
+            int playerHand = hand.PlayerHandSoftValue <= 21 ? hand.PlayerHandSoftValue : hand.PlayerHandValue;
+            int dealerHand = hand.DealerHandSoftValue <= 21 ? hand.DealerHandSoftValue : hand.DealerHandValue;
+
+            bool playerBlackjack = hand.PlayerHand.Count == 2 && playerHand == 21 ? true : false;
+            bool dealerBlackjack = hand.DealerHand.Count == 2 && dealerHand == 21 ? true : false;
+
+            if (playerBlackjack && !dealerBlackjack)
+            {
+                output = 2.5;
+            }
+            else if (playerHand > 21)
+            {
+                output = 0;
+            }
+            else if (dealerHand > 21)
+            {
+                output = 2;
+            }
+            else if (playerHand < dealerHand)
+            {
+                output = 0;
+            }
+            else if (playerHand > dealerHand)
+            {
+                output = 2;
+            }
+            else if (playerHand == dealerHand)
+            {
+                output = 1;
+            }
+
+            return output;
+        }
+
+        public static int CalculateHandValue(List<Card> inputHand)
         {
             int sum = 0;
 
-            if (isDealer && inputHand.Count == 2)
+            foreach (var card in inputHand)
             {
-                sum = inputHand[0].Value;
-            }
-            else
-            {
-                foreach (var card in inputHand)
-                {
-                    sum += card.Value;
-                }
+                sum += card.Value;
             }
 
             return sum;
@@ -155,13 +197,26 @@ namespace ConsoleAppBlackJack
 
             foreach (var card in inputHand)
             {
-                if (card.Value == 1)
+                if (card.Rank == Rank.Ace)
                 {
-                    ++sum;
+                    sum = 10;
                 }
             }
 
             return sum;
+        }
+
+        internal static Hand EvaluateHand(Hand hand)
+        {
+            hand.PlayerHandValue = CalculateHandValue(hand.PlayerHand);
+            hand.DealerHandValue = CalculateHandValue(hand.DealerHand);
+            hand.PlayerHandSoftValue = hand.PlayerHandValue + CountAces(hand.PlayerHand);
+            hand.DealerHandSoftValue = hand.DealerHandValue + CountAces(hand.DealerHand);
+            hand.Double = hand.PlayerHand.Count == 2 ? true : false;
+            hand.Split = hand.PlayerHand.Count == 2 && hand.PlayerHand[0].Rank == hand.PlayerHand[1].Rank ? true : false;
+            hand.Insurance = hand.DealerHand.Count == 1 && hand.DealerHandSoftValue == 11 ? true : false;
+
+            return hand;
         }
     }
 }

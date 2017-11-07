@@ -1,21 +1,21 @@
-[1] The objective of the game is to get a better hand than the dealer's hand, without the value exceeding 21.
-[2] Numbered cards are counted as their respective value. Jacks, queens and kings are counted as 10. Aces can be counted as either 1 or 10.
-[3] A hand with only a jack and an ace is known as a blackjack. A blackjack counts as 21.
+[1] The objective of the game is to get a better hand than the dealer's hand, without its value exceeding 21.
+[2] Numbered cards are counted as their respective value. Jacks, queens and kings are counted as 10. Aces can be counted as either 1 or 11.
+[3] A hand with only a value-10-card and an ace is known as a blackjack. A blackjack beats all other hands, even those valued 21.
 [4] At the start of a round, each player makes an inital bet of $5, $10, $20, $40 or $80.
-[5] After the initial bets are placed, the dealer deals himself two cards, one face up and the other face down. Each player is then dealt two cards, face up.
-[6] After being dealt their hand, each player has a choice to stand, hit, double down, or surrender.
+[5] After the initial bets are placed, the dealer deals himself one card, face up. Each player is then dealt two cards in turn, face up.
+[6] After being dealt their hand, each player has a choice to stand, hit, double, or surrender.
 [7] Hitting means being dealt another card, adding it to the value of the hand. A player may hit as many times as they like, unless their hand breaks 21.
-[8] If the value of a hand exceeds 21, the hand is immediately discarded.
+[8] If the value of a hand breaks 21, the hand loses and is discarded. Any bet placed on it is lost.
 [9] Standing means refusing any more cards, waiting for the round to be resolved.
-[10] Doubling down means to double one's initial bet, pledging to stand after the next card is dealt. This option is only given on the first turn after the starting hand is dealt.
-[11] Surrendering means to abandon your hand. Upon surrender, half of the player's bet is returned to them.
-[12] If you are dealt a pair (two cards of the same rank) you may choose to split them into two hands. A second bet must be made for the second hand.
-[13] If you split a pair of aces, you may only take one more card per hand.
-[14] If the dealer's face up card is an ace, you may buy insurance. This is a side bet that pays out if the face down card has a value of 10, giving the dealer a blackjack.
-[15] If the dealer's face up card is an ace and you have a blackjack, you may choose even money. This pays the same as winning with a non-blackjack hand.
-[16] The dealer must hit on 16 or lower, and must stand on 17 or higher. The may not split, double down or surrender.
-[17] If the dealer's hand exceeds 21, they immediately lose, and each player's bet is paid out.
-[18] Winning hands pay 1 to 1, meaning an initial bet of $10 would pay $20.
-[19] Blackjacks pay 3 to 2, meaning an initial bet of $10 would pay $25.
-[20] Insurance bets pay 2 to 1, meaning an inital bet of $10 would pay $30.
-[21] If the player's hand and the dealer's hand tie, the bet is returned to the player.
+[10] Doubling means to double one's initial bet, pledging to stand after the next card is dealt.
+[11] Surrendering means to abandon one's hand. Upon surrender, half of the player's bet is returned to them.
+[12] If a player is dealt a pair (two cards of the same value) they may choose to split them into two hands. A second bet must be made for the second hand.
+[13] If a player splits a pair of aces, only one more card is dealt to each hand.
+[14] If the dealer's first card is an ace, players may buy insurance. This is a side bet at half the amount of the original bet, that pays out if the dealer's next card gives them a blackjack.
+[15] The dealer must hit on 17 or lower (including a "soft 17" which includes an ace), and must stand on 18 or higher. The may not split, double down or surrender.
+[16] If the dealer's hand exceeds 21, they lose, and each player's bet is paid out.
+[17] Winning hands pay 1 to 1, meaning an initial bet of $10 would pay $20.
+[18] Blackjacks pay 3 to 2, meaning an initial bet of $10 would pay $25.
+[19] Insurance bets pay 2 to 1, meaning an inital bet of $10 would pay $30. Insurance bought when the player has a blackjack ("even money") is paid out immediately, with a sum equal to the intial wager.
+[20] If the player's hand and the dealer's hand tie, the bet is returned to the player.
+[21] The deck is shuffled before each new round of play.
