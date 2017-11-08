@@ -148,7 +148,7 @@ namespace ConsoleAppBlackJack
             int playerHand = inputHand.PlayerHandSoftValue <= 21 ? inputHand.PlayerHandSoftValue : inputHand.PlayerHandValue;
             int dealerHand = inputHand.DealerHandSoftValue <= 21 ? inputHand.DealerHandSoftValue : inputHand.DealerHandValue;
 
-            bool playerBlackjack = inputHand.PlayerHand.Count == 2 && playerHand == 21 ? true : false;
+            bool playerBlackjack = inputHand.PlayerHand.Count == 2 && playerHand == 21 && !inputHand.Split ? true : false;
             bool dealerBlackjack = inputHand.DealerHand.Count == 2 && dealerHand == 21 ? true : false;
 
             if (playerBlackjack && !dealerBlackjack)

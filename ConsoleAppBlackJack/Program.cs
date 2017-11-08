@@ -58,8 +58,6 @@ namespace ConsoleAppBlackJack
         private static void DealStartingHand()
         {
             Game.ShuffleDeck();
-            hands.Clear();
-            hands.Add(new Hand());
 
             PrintTitle();
             PrintPlayerInfo();
@@ -69,12 +67,15 @@ namespace ConsoleAppBlackJack
             Game.DealCard(hands[0].PlayerHand, 2);
         }
 
-        private static void Insurance()
+        private static Hand Insurance(Hand inputHand)
         {
             if (hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace)
             {
-                Console.WriteLine("Insurance");
+                inputHand.Bet += (0.5 * inputHand.Bet);
+                
             }
+
+            return inputHand;
         }
 
         private static void Split()
@@ -93,6 +94,14 @@ namespace ConsoleAppBlackJack
                 Game.SaveData(player);
                 hands[0].PlayerHand = Game.DealCard(hands[0].PlayerHand, 1);
                 hand2.PlayerHand = Game.DealCard(hand2.PlayerHand, 1);
+
+                for (int i = 0; i < hands.Count; i++)
+                {
+                    if (hands[i].PlayerHand[0].Rank == Rank.Ace)
+                    {
+                        hands[i].Stand = true;
+                    }
+                }
             }
         }
 
@@ -120,50 +129,55 @@ namespace ConsoleAppBlackJack
 
         private static void DealerRound()
         {
-            while (hands[0].DealerHandValue < 17 && hands[0].DealerHandSoftValue < 17)
-            {
-                var newHand = Game.DealCard(hands[0].DealerHand, 1);
+            bool deal = true;
 
-                for (int i = 0; i < hands.Count; i++)
+            do
+            {
+                deal = false;
+
+                if (hands[0].DealerHandSoftValue > hands[0].DealerHandValue && hands[0].DealerHandSoftValue <= 17)
                 {
-                    hands[i].DealerHand = newHand;
+                    deal = true;
+                }
+                else if (hands[0].DealerHandSoftValue > 21 && hands[0].DealerHandValue < 17)
+                {
+                    deal = true;
+                }
+                else if (hands[0].DealerHandSoftValue == hands[0].DealerHandValue && hands[0].DealerHandValue < 17)
+                {
+                    deal = true;
                 }
 
-                EvaluateHands();
+                if (deal)
+                {
+                    var newHand = Game.DealCard(hands[0].DealerHand, 1);
 
-                PrintTitle();
-                PrintPlayerInfo();
-                PrintBetAmount();
-                PrintHands();
+                    for (int i = 0; i < hands.Count; i++)
+                    {
+                        hands[i].DealerHand = newHand;
+                    }
 
-                Console.Write("Press any key to continue");
-                Console.ReadKey();
-            }
+                    EvaluateHands();
+                    PrintTitle();
+                    PrintPlayerInfo();
+                    PrintBetAmount();
+                    PrintHands();
+
+                    Console.Write("Press any key to continue");
+                    Console.ReadKey();
+                }
+
+            } while (deal);
 
             EndGame();
         }
 
-        private static bool EvaluateHands()
+        private static void EvaluateHands()
         {
-            int playerHand = 0;
-            bool over = false;
-            bool stand = false;
-            int dealerHand = hands[0].DealerHandSoftValue > hands[0].DealerHandValue && hands[0].DealerHandSoftValue <= 21 ? hands[0].DealerHandSoftValue : hands[0].DealerHandValue;
-
             for (int i = 0; i < hands.Count; i++)
             {
                 hands[i] = Game.EvaluateHand(hands[i]);
-                playerHand = hands[i].PlayerHandSoftValue > hands[i].PlayerHandValue && hands[i].PlayerHandSoftValue <= 21 ? hands[i].PlayerHandSoftValue : hands[i].PlayerHandValue;
-                over = playerHand > 21 ? true : false;
-                stand = hands[i].Stand;
             }
-
-            if (over)
-            {
-                EndGame();
-            }
-
-            return stand;
         }
 
         private static void EndGame()
@@ -189,7 +203,7 @@ namespace ConsoleAppBlackJack
 
                 if (hands.Count > 1)
                 {
-                    Console.Write($"Hand {i+1}: ");
+                    Console.Write($"Hand {i + 1}: ");
                 }
 
                 switch (result)
@@ -247,8 +261,9 @@ namespace ConsoleAppBlackJack
 
         private static void AskForBet()
         {
-            hands.Add(new Hand());
-            int bet = 0;
+            hands.Clear();
+            Hand hand = new Hand();
+            int bet = 5;
             PrintTitle();
             PrintPlayerInfo();
             PrintBettingChoices();
@@ -263,13 +278,10 @@ namespace ConsoleAppBlackJack
                 default: bet = 5; break;
             }
 
-            hands[0].Bet = bet;
+            hand.Bet = bet;
             player.Bankroll -= bet;
+            hands.Add(hand);
             Game.SaveData(player);
-
-            PrintTitle();
-            PrintPlayerInfo();
-            PrintBetAmount();
         }
 
         private static void AskForAction()
@@ -287,29 +299,63 @@ namespace ConsoleAppBlackJack
 
                 for (int i = 0; i < count; i++)
                 {
-                    if (hands.Count > 1)
+                    if (!hands[i].Stand)
                     {
-                        Console.WriteLine($"Hand {i + 1}");
-                    }
+                        if (hands.Count > 1)
+                        {
+                            Console.WriteLine($"Hand {i + 1}");
+                        }
 
-                    PrintActionMenu(hands[i]);
+                        PrintActionMenu(hands[i]);
 
-                    switch (GetInput().ToLower())
-                    {
-                        case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
-                        case "s": hands[i].Stand = true; break;
-                        case "d": hands[i] = Double(hands[i]); break;
-                        case "p": Split(); break;
-                        case "i": Insurance(); break;
-                        default: hands[i].Stand = true; break;
+                        switch (GetInput().ToLower())
+                        {
+                            case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
+                            case "s": hands[i].Stand = true; break;
+                            case "d": hands[i] = Double(hands[i]); break;
+                            case "p": Split(); break;
+                            case "i": hands[i] = Insurance(hands[i]); break;
+                            default: hands[i].Stand = true; break;
+                        }
                     }
                 }
-                if (EvaluateHands())
+
+                EvaluateHands();
+
+                if (CheckForStand())
                 {
                     DealerRound();
                 }
+                if (CheckForLose())
+                {
+                    EndGame();
+                }
 
             } while (active);
+        }
+
+        private static bool CheckForLose()
+        {
+            int lose = 0;
+
+            for (int i = 0; i < hands.Count; i++)
+            {
+                lose = hands[i].PlayerHandValue > 21 ? lose + 1 : lose;
+            }
+
+            return lose == hands.Count;
+        }
+
+        private static bool CheckForStand()
+        {
+            int stand = 0;
+
+            for (int i = 0; i < hands.Count; i++)
+            {
+                stand = hands[i].Stand == true ? stand + 1 : stand;
+            }
+
+            return stand == hands.Count;
         }
 
         private static void GetPlayerInfo()
