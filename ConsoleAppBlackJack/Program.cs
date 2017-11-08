@@ -69,10 +69,9 @@ namespace ConsoleAppBlackJack
 
         private static Hand Insurance(Hand inputHand)
         {
-            if (inputHand.PlayerHand.Count == 2 && hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace && !inputHand.Insurance)
+            if (inputHand.PlayerHand.Count == 2 && hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0)
             {
-                inputHand.Bet += (0.5 * inputHand.Bet);
-                inputHand.Insurance = true;
+                inputHand.Insurance = (0.5 * inputHand.Bet);
 
                 if (inputHand.PlayerHand.Count == 2 && inputHand.PlayerHandSoftValue == 21)
                 {
@@ -192,6 +191,12 @@ namespace ConsoleAppBlackJack
             for (int i = 0; i < hands.Count; i++)
             {
                 result = Game.CompareHands(hands[i]);
+
+                switch (result)
+                {
+                    case 1: hands[i].Bet += hands[i].Insurance; break;
+                }
+
                 hands[i].TransactionAmount = result * hands[i].Bet;
                 player.Bankroll += hands[i].TransactionAmount;
                 player.Hands.Add(hands[i]);
@@ -218,11 +223,11 @@ namespace ConsoleAppBlackJack
                     case 2.5: Console.WriteLine("Blackjack!"); break;
                     case 1:
                         {
-                            if (hands[i].Insurance && hands[0].DealerHand.Count == 2 && hands[0].DealerHandSoftValue == 21)
+                            if (hands[i].Insurance > 0 && hands[0].DealerHand.Count == 2 && hands[0].DealerHandSoftValue == 21)
                             {
                                 Console.WriteLine("Insurance pays out.");
                             }
-                            else if (hands[i].Insurance && hands[i].PlayerHand.Count == 2 && hands[i].PlayerHandSoftValue == 21)
+                            else if (hands[i].Insurance > 0 && hands[i].PlayerHand.Count == 2 && hands[i].PlayerHandSoftValue == 21)
                             {
                                 Console.WriteLine("Insurance pays out.");
                             }
@@ -440,7 +445,7 @@ namespace ConsoleAppBlackJack
         {
             ConsoleColor color = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"Bet: ${hands[0].Bet}");
+            Console.WriteLine($"Bet: ${hands[0].Bet + hands[0].Insurance}");
             Console.ForegroundColor = color;
             Console.WriteLine();
         }
@@ -576,7 +581,7 @@ namespace ConsoleAppBlackJack
             {
                 Console.WriteLine("S[P]lit");
             }
-            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && !inputHand.Insurance)
+            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0)
             {
                 Console.WriteLine("[I]nsurance");
             }
