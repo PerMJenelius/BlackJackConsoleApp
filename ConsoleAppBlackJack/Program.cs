@@ -69,9 +69,11 @@ namespace ConsoleAppBlackJack
 
         private static Hand Insurance(Hand inputHand)
         {
-            if (inputHand.PlayerHand.Count == 2 && hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0)
+            if (inputHand.PlayerHand.Count == 2 && hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0 && inputHand.Split == false)
             {
                 inputHand.Insurance = (0.5 * inputHand.Bet);
+                player.Bankroll -= inputHand.Insurance;
+                Game.SaveData(player);
 
                 if (inputHand.PlayerHand.Count == 2 && inputHand.PlayerHandSoftValue == 21)
                 {
