@@ -240,7 +240,10 @@ namespace ConsoleAppBlackJack
                 }
                 Console.ForegroundColor = color;
 
-                Console.ReadKey();
+                if (hands.Count > 1)
+                {
+                    Console.ReadKey();
+                }
             }
 
             active = false;
@@ -443,9 +446,18 @@ namespace ConsoleAppBlackJack
 
         private static void PrintBetAmount()
         {
+            double bet = 0;
+
+            for (int i = 0; i < hands.Count; i++)
+            {
+                bet += hands[i].Bet;
+            }
+
+            bet += hands[0].Insurance;
+
             ConsoleColor color = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"Bet: ${hands[0].Bet + hands[0].Insurance}");
+            Console.WriteLine($"Bet: ${bet}");
             Console.ForegroundColor = color;
             Console.WriteLine();
         }
@@ -581,7 +593,7 @@ namespace ConsoleAppBlackJack
             {
                 Console.WriteLine("S[P]lit");
             }
-            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0)
+            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0 && inputHand.Split == false)
             {
                 Console.WriteLine("[I]nsurance");
             }
