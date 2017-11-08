@@ -69,10 +69,15 @@ namespace ConsoleAppBlackJack
 
         private static Hand Insurance(Hand inputHand)
         {
-            if (hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace)
+            if (inputHand.PlayerHand.Count == 2 && hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace && !inputHand.Insurance)
             {
                 inputHand.Bet += (0.5 * inputHand.Bet);
-                
+                inputHand.Insurance = true;
+
+                if (inputHand.PlayerHand.Count == 2 && inputHand.PlayerHandSoftValue == 21)
+                {
+                    EndGame();
+                }
             }
 
             return inputHand;
@@ -211,7 +216,22 @@ namespace ConsoleAppBlackJack
                     case 0: Console.WriteLine("You lose."); break;
                     case 2: Console.WriteLine("You win!"); break;
                     case 2.5: Console.WriteLine("Blackjack!"); break;
-                    case 1: Console.WriteLine("It's a draw!"); break;
+                    case 1:
+                        {
+                            if (hands[i].Insurance && hands[0].DealerHand.Count == 2 && hands[0].DealerHandSoftValue == 21)
+                            {
+                                Console.WriteLine("Insurance pays out.");
+                            }
+                            else if (hands[i].Insurance && hands[i].PlayerHand.Count == 2 && hands[i].PlayerHandSoftValue == 21)
+                            {
+                                Console.WriteLine("Insurance pays out.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("It's a draw!");
+                            };
+                            break;
+                        }
                 }
                 Console.ForegroundColor = color;
 
@@ -352,7 +372,7 @@ namespace ConsoleAppBlackJack
 
             for (int i = 0; i < hands.Count; i++)
             {
-                stand = hands[i].Stand == true ? stand + 1 : stand;
+                stand = hands[i].Stand == true || hands[i].PlayerHandValue == 21 || hands[i].PlayerHandSoftValue == 21 ? stand + 1 : stand;
             }
 
             return stand == hands.Count;
@@ -556,7 +576,7 @@ namespace ConsoleAppBlackJack
             {
                 Console.WriteLine("S[P]lit");
             }
-            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace)
+            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && !inputHand.Insurance)
             {
                 Console.WriteLine("[I]nsurance");
             }

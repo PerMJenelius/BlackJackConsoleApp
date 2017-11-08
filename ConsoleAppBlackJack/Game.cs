@@ -151,11 +151,19 @@ namespace ConsoleAppBlackJack
             bool playerBlackjack = inputHand.PlayerHand.Count == 2 && playerHand == 21 && !inputHand.Split ? true : false;
             bool dealerBlackjack = inputHand.DealerHand.Count == 2 && dealerHand == 21 ? true : false;
 
-            if (playerBlackjack && !dealerBlackjack)
+            if (playerBlackjack && !dealerBlackjack && !inputHand.Insurance)
             {
                 output = 2.5;
             }
-            else if (dealerBlackjack && !playerBlackjack)
+            else if (playerBlackjack && inputHand.Insurance)
+            {
+                output = 1;
+            }
+            else if (dealerBlackjack && !playerBlackjack && inputHand.Insurance)
+            {
+                output = 1;
+            }
+            else if (dealerBlackjack && !playerBlackjack && !inputHand.Insurance)
             {
                 output = 0;
             }
