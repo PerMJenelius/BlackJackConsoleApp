@@ -20,7 +20,7 @@ namespace ConsoleAppBlackJack
             {
                 AskForNewRound();
                 AskForBet();
-                DealStartingHand();
+                hands[0] = Game.DealStartingHand(hands[0]);
                 AskForAction();
             } while (running);
         }
@@ -53,18 +53,6 @@ namespace ConsoleAppBlackJack
                     Console.WriteLine("Sorry, no player by that name was found.");
                 }
             } while (!player.IsActive);
-        }
-
-        private static void DealStartingHand()
-        {
-            Game.ShuffleDeck();
-
-            PrintTitle();
-            PrintPlayerInfo();
-            PrintBetAmount();
-
-            Game.DealCard(hands[0].DealerHand, 1);
-            Game.DealCard(hands[0].PlayerHand, 2);
         }
 
         private static Hand Insurance(Hand inputHand)
@@ -123,7 +111,6 @@ namespace ConsoleAppBlackJack
                 EvaluateHands();
 
                 PrintTitle();
-                PrintPlayerInfo();
                 PrintBetAmount();
                 PrintHands();
 
@@ -165,7 +152,6 @@ namespace ConsoleAppBlackJack
 
                     EvaluateHands();
                     PrintTitle();
-                    PrintPlayerInfo();
                     PrintBetAmount();
                     PrintHands();
 
@@ -206,7 +192,6 @@ namespace ConsoleAppBlackJack
                 Game.SaveData(player);
 
                 PrintTitle();
-                PrintPlayerInfo();
                 PrintBetAmount();
                 PrintHands();
 
@@ -295,7 +280,6 @@ namespace ConsoleAppBlackJack
             Hand hand = new Hand();
             int bet = 5;
             PrintTitle();
-            PrintPlayerInfo();
             PrintBettingChoices();
 
             switch (GetInput().ToLower())
@@ -320,17 +304,16 @@ namespace ConsoleAppBlackJack
 
             do
             {
-                PrintTitle();
-                PrintPlayerInfo();
-                PrintBetAmount();
-                PrintHands();
-
                 int count = hands.Count;
 
                 for (int i = 0; i < count; i++)
                 {
-                    if (!hands[i].Stand)
+                    do
                     {
+                        PrintTitle();
+                        PrintBetAmount();
+                        PrintHands();
+
                         if (hands.Count > 1)
                         {
                             Console.WriteLine($"Hand {i + 1}");
@@ -347,7 +330,10 @@ namespace ConsoleAppBlackJack
                             case "i": hands[i] = Insurance(hands[i]); break;
                             default: hands[i].Stand = true; break;
                         }
-                    }
+
+                        EvaluateHands();
+
+                    } while (!hands[i].Stand && hands[i].PlayerHandValue < 21);
                 }
 
                 EvaluateHands();
@@ -434,6 +420,11 @@ namespace ConsoleAppBlackJack
             Console.WriteLine("BlackJack Console App v 1.0");
             Console.WriteLine("===========================");
             Console.ForegroundColor = color;
+
+            if (player != null)
+            {
+                PrintPlayerInfo();
+            }
         }
 
         private static void PrintPlayerInfo()

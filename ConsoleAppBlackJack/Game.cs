@@ -23,6 +23,14 @@ namespace ConsoleAppBlackJack
             return id;
         }
 
+        internal static Hand DealStartingHand(Hand hand)
+        {
+            ShuffleDeck();
+            DealCard(hand.DealerHand, 1);
+            DealCard(hand.PlayerHand, 2);
+            return hand;
+        }
+
         public static bool PlayerNameExists(string input)
         {
             List<Player> playerList = LoadPlayerList();
