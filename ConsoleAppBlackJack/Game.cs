@@ -23,12 +23,18 @@ namespace ConsoleAppBlackJack
             return id;
         }
 
-        internal static Hand DealStartingHand(Hand hand)
+        private static List<Player> LoadPlayerList()
         {
-            ShuffleDeck();
-            DealCard(hand.DealerHand, 1);
-            DealCard(hand.PlayerHand, 2);
-            return hand;
+            string xmlData = File.ReadAllText(dataPath);
+            List<Player> playerList = XMLConvert.XMLToObject(xmlData);
+            return playerList;
+        }
+
+        internal static Player GetPlayerByName(string inputName)
+        {
+            List<Player> playerList = LoadPlayerList();
+            return playerList
+                .FirstOrDefault(p => p.Name == inputName);
         }
 
         public static bool PlayerNameExists(string input)
@@ -44,52 +50,6 @@ namespace ConsoleAppBlackJack
                 }
             }
             return exists;
-        }
-
-        public static void SavePlayer(Player player)
-        {
-            List<Player> playerList = LoadPlayerList();
-            playerList.Add(player);
-            string xmlData = XMLConvert.ObjectToXml(playerList);
-            File.WriteAllText(dataPath, xmlData);
-        }
-
-        public static void SaveData(Player player)
-        {
-            List<Player> playerList = LoadPlayerList();
-            Player oldPlayer = playerList
-                .FirstOrDefault(p => p.ID == player.ID);
-            playerList.Remove(oldPlayer);
-            playerList.Add(player);
-            string xmlData = XMLConvert.ObjectToXml(playerList);
-            File.WriteAllText(dataPath, xmlData);
-        }
-
-        private static List<Player> LoadPlayerList()
-        {
-            string xmlData = File.ReadAllText(dataPath);
-            List<Player> playerList = XMLConvert.XMLToObject(xmlData);
-            return playerList;
-        }
-
-        private bool MakeDeposit(int depositSum)
-        {
-            bool accepted = false;
-
-            //if (IsActive && depositSum > 0)
-            //{
-            //    Bankroll += depositSum;
-            //    accepted = true;
-            //}
-
-            return accepted;
-        }
-
-        internal static Player GetPlayerByName(string inputName)
-        {
-            List<Player> playerList = LoadPlayerList();
-            return playerList
-                .FirstOrDefault(p => p.Name == inputName);
         }
 
         public static void ShuffleDeck()
@@ -139,6 +99,14 @@ namespace ConsoleAppBlackJack
             } while (cardList.Count > 0);
         }
 
+        internal static Hand DealStartingHand(Hand hand)
+        {
+            ShuffleDeck();
+            DealCard(hand.DealerHand, 1);
+            DealCard(hand.PlayerHand, 2);
+            return hand;
+        }
+
         public static List<Card> DealCard(List<Card> inputHand, int numberOfCards)
         {
             for (int i = 0; i < numberOfCards; i++)
@@ -147,6 +115,18 @@ namespace ConsoleAppBlackJack
             }
 
             return inputHand;
+        }
+
+        public static int CalculateHandValue(List<Card> inputHand)
+        {
+            int sum = 0;
+
+            foreach (var card in inputHand)
+            {
+                sum += card.Value;
+            }
+
+            return sum;
         }
 
         internal static double CompareHands(Hand inputHand)
@@ -200,18 +180,6 @@ namespace ConsoleAppBlackJack
             return output;
         }
 
-        public static int CalculateHandValue(List<Card> inputHand)
-        {
-            int sum = 0;
-
-            foreach (var card in inputHand)
-            {
-                sum += card.Value;
-            }
-
-            return sum;
-        }
-
         public static int CountAces(List<Card> inputHand)
         {
             int sum = 0;
@@ -227,14 +195,82 @@ namespace ConsoleAppBlackJack
             return sum;
         }
 
-        internal static Hand EvaluateHand(Hand hand)
+        public static List<Hand> EvaluateHands(List<Hand> hands)
         {
-            hand.PlayerHandValue = CalculateHandValue(hand.PlayerHand);
-            hand.DealerHandValue = CalculateHandValue(hand.DealerHand);
-            hand.PlayerHandSoftValue = hand.PlayerHandValue + CountAces(hand.PlayerHand);
-            hand.DealerHandSoftValue = hand.DealerHandValue + CountAces(hand.DealerHand);
+            for (int i = 0; i < hands.Count; i++)
+            {
+                hands[i].PlayerHandValue = CalculateHandValue(hands[i].PlayerHand);
+                hands[i].DealerHandValue = CalculateHandValue(hands[i].DealerHand);
+                hands[i].PlayerHandSoftValue = hands[i].PlayerHandValue + CountAces(hands[i].PlayerHand);
+                hands[i].DealerHandSoftValue = hands[i].DealerHandValue + CountAces(hands[i].DealerHand);
+            }
 
-            return hand;
+            return hands;
+        }
+
+        public static Hand Insurance(Hand inputHand, Player player)
+        {
+            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0 && inputHand.Split == false)
+            {
+                inputHand.Insurance = (0.5 * inputHand.Bet);
+                player.Bankroll -= inputHand.Insurance;
+                SaveData(player);
+
+                if (inputHand.PlayerHand.Count == 2 && inputHand.PlayerHandSoftValue == 21)
+                {
+                    Program.EndGame();
+                }
+            }
+
+            return inputHand;
+        }
+
+        public static List<Hand> Split(List<Hand> hands, Player player)
+        {
+            if (hands[0].PlayerHand.Count == 2 && hands[0].PlayerHand[0].Value == hands[0].PlayerHand[1].Value)
+            {
+                Hand hand2 = new Hand();
+                hand2.PlayerHand.Add(hands[0].PlayerHand[1]);
+                hands[0].PlayerHand.Remove(hands[0].PlayerHand[1]);
+                hand2.Bet = hands[0].Bet;
+                player.Bankroll -= hand2.Bet;
+                hands[0].Split = true;
+                hand2.Split = true;
+                hands.Add(hand2);
+                player.Hands.Add(hand2);
+                Game.SaveData(player);
+                hands[0].PlayerHand = Game.DealCard(hands[0].PlayerHand, 1);
+                hand2.PlayerHand = Game.DealCard(hand2.PlayerHand, 1);
+
+                for (int i = 0; i < hands.Count; i++)
+                {
+                    if (hands[i].PlayerHand[0].Rank == Rank.Ace)
+                    {
+                        hands[i].Stand = true;
+                    }
+                }
+            }
+
+            return hands;
+        }
+
+        public static void SavePlayer(Player player)
+        {
+            List<Player> playerList = LoadPlayerList();
+            playerList.Add(player);
+            string xmlData = XMLConvert.ObjectToXml(playerList);
+            File.WriteAllText(dataPath, xmlData);
+        }
+
+        public static void SaveData(Player player)
+        {
+            List<Player> playerList = LoadPlayerList();
+            Player oldPlayer = playerList
+                .FirstOrDefault(p => p.ID == player.ID);
+            playerList.Remove(oldPlayer);
+            playerList.Add(player);
+            string xmlData = XMLConvert.ObjectToXml(playerList);
+            File.WriteAllText(dataPath, xmlData);
         }
     }
 }

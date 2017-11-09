@@ -55,50 +55,6 @@ namespace ConsoleAppBlackJack
             } while (!player.IsActive);
         }
 
-        private static Hand Insurance(Hand inputHand)
-        {
-            if (inputHand.PlayerHand.Count == 2 && hands[0].DealerHand.Count == 1 && hands[0].DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0 && inputHand.Split == false)
-            {
-                inputHand.Insurance = (0.5 * inputHand.Bet);
-                player.Bankroll -= inputHand.Insurance;
-                Game.SaveData(player);
-
-                if (inputHand.PlayerHand.Count == 2 && inputHand.PlayerHandSoftValue == 21)
-                {
-                    EndGame();
-                }
-            }
-
-            return inputHand;
-        }
-
-        private static void Split()
-        {
-            if (hands[0].PlayerHand.Count == 2 && hands[0].PlayerHand[0].Value == hands[0].PlayerHand[1].Value)
-            {
-                Hand hand2 = new Hand();
-                hand2.PlayerHand.Add(hands[0].PlayerHand[1]);
-                hands[0].PlayerHand.Remove(hands[0].PlayerHand[1]);
-                hand2.Bet = hands[0].Bet;
-                player.Bankroll -= hand2.Bet;
-                hands[0].Split = true;
-                hand2.Split = true;
-                hands.Add(hand2);
-                player.Hands.Add(hand2);
-                Game.SaveData(player);
-                hands[0].PlayerHand = Game.DealCard(hands[0].PlayerHand, 1);
-                hand2.PlayerHand = Game.DealCard(hand2.PlayerHand, 1);
-
-                for (int i = 0; i < hands.Count; i++)
-                {
-                    if (hands[i].PlayerHand[0].Rank == Rank.Ace)
-                    {
-                        hands[i].Stand = true;
-                    }
-                }
-            }
-        }
-
         private static Hand Double(Hand inputHand)
         {
             if (inputHand.PlayerHand.Count == 2)
@@ -108,7 +64,7 @@ namespace ConsoleAppBlackJack
                 inputHand.Stand = true;
                 inputHand.PlayerHand = Game.DealCard(inputHand.PlayerHand, 1);
 
-                EvaluateHands();
+                hands = Game.EvaluateHands(hands);
                 PrintInfo();
 
                 Console.Write("Press any key to continue");
@@ -147,7 +103,7 @@ namespace ConsoleAppBlackJack
                         hands[i].DealerHand = newHand;
                     }
 
-                    EvaluateHands();
+                    hands = Game.EvaluateHands(hands);
                     PrintInfo();
 
                     Console.Write("Press any key to continue");
@@ -159,15 +115,7 @@ namespace ConsoleAppBlackJack
             EndGame();
         }
 
-        private static void EvaluateHands()
-        {
-            for (int i = 0; i < hands.Count; i++)
-            {
-                hands[i] = Game.EvaluateHand(hands[i]);
-            }
-        }
-
-        private static void EndGame()
+        public static void EndGame()
         {
             double result = 0;
 
@@ -293,7 +241,7 @@ namespace ConsoleAppBlackJack
 
         private static void AskForAction()
         {
-            EvaluateHands();
+            hands = Game.EvaluateHands(hands);
 
             do
             {
@@ -317,17 +265,17 @@ namespace ConsoleAppBlackJack
                             case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
                             case "s": hands[i].Stand = true; break;
                             case "d": hands[i] = Double(hands[i]); break;
-                            case "p": Split(); break;
-                            case "i": hands[i] = Insurance(hands[i]); break;
+                            case "p": Game.Split(hands, player); break;
+                            case "i": hands[i] = Game.Insurance(hands[i], player); break;
                             default: hands[i].Stand = true; break;
                         }
 
-                        EvaluateHands();
+                        hands = Game.EvaluateHands(hands);
 
                     } while (!hands[i].Stand && hands[i].PlayerHandValue < 21);
                 }
 
-                EvaluateHands();
+                hands = Game.EvaluateHands(hands);
 
                 if (CheckForStand())
                 {
