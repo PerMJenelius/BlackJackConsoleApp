@@ -27,16 +27,14 @@ namespace ConsoleAppBlackJack
 
         private static void RegisterPlayer()
         {
-            do
-            {
-                player = AskForPlayerName();
-                if (player.IsActive)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Sorry, that name is taken.");
-                }
+            player = AskForPlayerName();
 
-            } while (player.IsActive);
+            while (player.IsActive)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Sorry, that name is taken.");
+                player = AskForPlayerName();
+            }
 
             player.IsActive = true;
             Game.SavePlayer(player);
@@ -44,15 +42,14 @@ namespace ConsoleAppBlackJack
 
         private static void Login()
         {
-            do
+            player = AskForPlayerName();
+
+            while (!player.IsActive)
             {
+                Console.WriteLine();
+                Console.WriteLine("Sorry, no player by that name was found.");
                 player = AskForPlayerName();
-                if (!player.IsActive)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Sorry, no player by that name was found.");
-                }
-            } while (!player.IsActive);
+            }
         }
 
         private static Hand Double(Hand inputHand)
@@ -75,67 +72,32 @@ namespace ConsoleAppBlackJack
 
         private static void DealerRound()
         {
-            bool deal = true;
-
             do
             {
-                deal = false;
+                var newHand = Game.DealCard(hands[0].DealerHand, 1);
 
-                if (hands[0].DealerHandSoftValue > hands[0].DealerHandValue && hands[0].DealerHandSoftValue <= 17)
+                for (int i = 0; i < hands.Count; i++)
                 {
-                    deal = true;
-                }
-                else if (hands[0].DealerHandSoftValue > 21 && hands[0].DealerHandValue < 17)
-                {
-                    deal = true;
-                }
-                else if (hands[0].DealerHandSoftValue == hands[0].DealerHandValue && hands[0].DealerHandValue < 17)
-                {
-                    deal = true;
+                    hands[i].DealerHand = newHand;
                 }
 
-                if (deal)
-                {
-                    var newHand = Game.DealCard(hands[0].DealerHand, 1);
+                hands = Game.EvaluateHands(hands);
+                PrintInfo();
 
-                    for (int i = 0; i < hands.Count; i++)
-                    {
-                        hands[i].DealerHand = newHand;
-                    }
+                Console.Write("Press any key to continue");
+                Console.ReadKey();
 
-                    hands = Game.EvaluateHands(hands);
-                    PrintInfo();
-
-                    Console.Write("Press any key to continue");
-                    Console.ReadKey();
-                }
-
-            } while (deal);
-
-            EndGame();
+            } while (Game.Deal(hands));
         }
 
         public static void EndGame()
         {
-            double result = 0;
-
             for (int i = 0; i < hands.Count; i++)
             {
-                result = Game.CompareHands(hands[i]);
-
-                switch (result)
-                {
-                    case 1: hands[i].Bet += hands[i].Insurance; break;
-                }
-
-                hands[i].TransactionAmount = result * hands[i].Bet;
-                player.Bankroll += hands[i].TransactionAmount;
-                player.Hands.Add(hands[i]);
-
-                Game.SaveData(player);
+                double result = Game.CompareHands(hands[i]);
+                hands[i] = Game.Payout(hands[i], player, result);
 
                 PrintInfo();
-
                 var color = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
 
@@ -186,22 +148,11 @@ namespace ConsoleAppBlackJack
 
         private static Player AskForPlayerName()
         {
-            bool playerExists;
-
             Console.WriteLine();
             Console.Write("Please write your name: ");
             string inputName = GetInput();
 
-            playerExists = Game.PlayerNameExists(inputName);
-
-            if (playerExists)
-            {
-                return Game.GetPlayerByName(inputName);
-            }
-            else
-            {
-                return new Player(Game.GeneratePlayerId(), inputName);
-            }
+            return Game.PlayerNameExists(inputName) ? Game.GetPlayerByName(inputName) : new Player(Game.GeneratePlayerId(), inputName);
         }
 
         private static void AskForNewRound()
@@ -219,7 +170,7 @@ namespace ConsoleAppBlackJack
         {
             hands.Clear();
             Hand hand = new Hand();
-            int bet = 5;
+            int bet = 0;
             PrintInfo();
             PrintBettingChoices();
 
@@ -260,57 +211,39 @@ namespace ConsoleAppBlackJack
 
                         PrintActionMenu(hands[i]);
 
-                        switch (GetInput().ToLower())
+                        if (hands[i].PlayerHandValue >= 21 || hands[i].PlayerHandSoftValue == 21)
                         {
-                            case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
-                            case "s": hands[i].Stand = true; break;
-                            case "d": hands[i] = Double(hands[i]); break;
-                            case "p": Game.Split(hands, player); break;
-                            case "i": hands[i] = Game.Insurance(hands[i], player); break;
-                            default: hands[i].Stand = true; break;
+                            hands[i].Stand = true;
+                        }
+                        else
+                        {
+                            switch (GetInput().ToLower())
+                            {
+                                case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
+                                case "s": hands[i].Stand = true; break;
+                                case "d": hands[i] = Double(hands[i]); break;
+                                case "p": Game.Split(hands, player); break;
+                                case "i": hands[i] = Game.Insurance(hands[i], player); break;
+                                default: hands[i].Stand = true; break;
+                            }
                         }
 
                         hands = Game.EvaluateHands(hands);
 
-                    } while (!hands[i].Stand && hands[i].PlayerHandValue < 21);
+                    } while (!hands[i].Stand && hands.Count == count);
                 }
 
-                hands = Game.EvaluateHands(hands);
-
-                if (CheckForStand())
+                if (Game.CheckForLose(hands))
+                {
+                    EndGame();
+                }
+                if (active && Game.CheckForStand(hands))
                 {
                     DealerRound();
-                }
-                if (CheckForLose())
-                {
                     EndGame();
                 }
 
             } while (active);
-        }
-
-        private static bool CheckForLose()
-        {
-            int lose = 0;
-
-            for (int i = 0; i < hands.Count; i++)
-            {
-                lose = hands[i].PlayerHandValue > 21 ? lose + 1 : lose;
-            }
-
-            return lose == hands.Count;
-        }
-
-        private static bool CheckForStand()
-        {
-            int stand = 0;
-
-            for (int i = 0; i < hands.Count; i++)
-            {
-                stand = hands[i].Stand == true || hands[i].PlayerHandValue == 21 || hands[i].PlayerHandSoftValue == 21 ? stand + 1 : stand;
-            }
-
-            return stand == hands.Count;
         }
 
         private static void GetPlayerInfo()
@@ -338,15 +271,20 @@ namespace ConsoleAppBlackJack
         private static string GetInput()
         {
             string input = string.Empty;
+            bool success = false;
 
-            try
+            do
             {
-                input = Console.ReadLine();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred. Code: {ex}");
-            }
+                try
+                {
+                    input = Console.ReadLine();
+                    success = true;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"Please try again.");
+                }
+            } while (!success);
 
             return input;
         }

@@ -104,6 +104,7 @@ namespace ConsoleAppBlackJack
             ShuffleDeck();
             DealCard(hand.DealerHand, 1);
             DealCard(hand.PlayerHand, 2);
+
             return hand;
         }
 
@@ -139,23 +140,7 @@ namespace ConsoleAppBlackJack
             bool playerBlackjack = inputHand.PlayerHand.Count == 2 && playerHand == 21 && !inputHand.Split ? true : false;
             bool dealerBlackjack = inputHand.DealerHand.Count == 2 && dealerHand == 21 ? true : false;
 
-            if (playerBlackjack && !dealerBlackjack && inputHand.Insurance == 0)
-            {
-                output = 2.5;
-            }
-            else if (playerBlackjack && inputHand.Insurance > 0)
-            {
-                output = 1;
-            }
-            else if (dealerBlackjack && !playerBlackjack && inputHand.Insurance > 0)
-            {
-                output = 1;
-            }
-            else if (dealerBlackjack && !playerBlackjack && inputHand.Insurance == 0)
-            {
-                output = 0;
-            }
-            else if (playerHand > 21)
+            if (playerHand > 21)
             {
                 output = 0;
             }
@@ -163,11 +148,26 @@ namespace ConsoleAppBlackJack
             {
                 output = 2;
             }
+            else if (dealerBlackjack && !playerBlackjack && inputHand.Insurance == 0)
+            {
+                output = 0;
+            }
+            else if (dealerBlackjack && !playerBlackjack && inputHand.Insurance > 0)
+            {
+                output = 1;
+            }
+            else if (playerBlackjack && !dealerBlackjack && inputHand.Insurance == 0)
+            {
+                output = 2.5;
+            }
+            else if (playerBlackjack && inputHand.Insurance > 0)
+            {
+                output = 1;
+            }
             else if (playerHand < dealerHand)
             {
                 output = 0;
             }
-
             else if (playerHand > dealerHand)
             {
                 output = 2;
@@ -210,16 +210,15 @@ namespace ConsoleAppBlackJack
 
         public static Hand Insurance(Hand inputHand, Player player)
         {
-            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0 && inputHand.Split == false)
+            if (inputHand.PlayerHand.Count == 2 &&
+                inputHand.DealerHand.Count == 1 &&
+                inputHand.DealerHand[0].Rank == Rank.Ace &&
+                inputHand.Insurance == 0 &&
+                inputHand.Split == false)
             {
                 inputHand.Insurance = (0.5 * inputHand.Bet);
                 player.Bankroll -= inputHand.Insurance;
                 SaveData(player);
-
-                if (inputHand.PlayerHand.Count == 2 && inputHand.PlayerHandSoftValue == 21)
-                {
-                    Program.EndGame();
-                }
             }
 
             return inputHand;
@@ -232,15 +231,19 @@ namespace ConsoleAppBlackJack
                 Hand hand2 = new Hand();
                 hand2.PlayerHand.Add(hands[0].PlayerHand[1]);
                 hands[0].PlayerHand.Remove(hands[0].PlayerHand[1]);
+
                 hand2.Bet = hands[0].Bet;
                 player.Bankroll -= hand2.Bet;
+
                 hands[0].Split = true;
                 hand2.Split = true;
+
                 hands.Add(hand2);
                 player.Hands.Add(hand2);
-                Game.SaveData(player);
-                hands[0].PlayerHand = Game.DealCard(hands[0].PlayerHand, 1);
-                hand2.PlayerHand = Game.DealCard(hand2.PlayerHand, 1);
+                SaveData(player);
+
+                hands[0].PlayerHand = DealCard(hands[0].PlayerHand, 1);
+                hand2.PlayerHand = DealCard(hand2.PlayerHand, 1);
 
                 for (int i = 0; i < hands.Count; i++)
                 {
@@ -252,6 +255,49 @@ namespace ConsoleAppBlackJack
             }
 
             return hands;
+        }
+
+        public static bool CheckForLose(List<Hand> hands)
+        {
+            int lose = 0;
+
+            for (int i = 0; i < hands.Count; i++)
+            {
+                lose = hands[i].PlayerHandValue > 21 ? lose + 1 : lose;
+            }
+
+            return lose == hands.Count;
+        }
+
+        public static bool CheckForStand(List<Hand> hands)
+        {
+            int stand = 0;
+
+            for (int i = 0; i < hands.Count; i++)
+            {
+                stand = hands[i].Stand == true ? stand + 1 : stand;
+            }
+
+            return stand == hands.Count;
+        }
+
+        internal static bool Deal(List<Hand> hands)
+        {
+            return (hands[0].DealerHandSoftValue > hands[0].DealerHandValue && hands[0].DealerHandSoftValue <= 17) ||
+                (hands[0].DealerHandSoftValue > 21 && hands[0].DealerHandValue < 17) ||
+                (hands[0].DealerHandSoftValue == hands[0].DealerHandValue && hands[0].DealerHandValue < 17);
+        }
+
+        internal static Hand Payout(Hand inputHand, Player player, double result)
+        {
+            inputHand.Bet = result == 1 ? inputHand.Bet + inputHand.Insurance : inputHand.Bet;
+            inputHand.TransactionAmount = result * inputHand.Bet;
+            player.Bankroll += inputHand.TransactionAmount;
+            player.Hands.Add(inputHand);
+
+            SaveData(player);
+
+            return inputHand;
         }
 
         public static void SavePlayer(Player player)
