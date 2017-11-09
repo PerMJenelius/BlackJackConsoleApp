@@ -109,10 +109,7 @@ namespace ConsoleAppBlackJack
                 inputHand.PlayerHand = Game.DealCard(inputHand.PlayerHand, 1);
 
                 EvaluateHands();
-
-                PrintTitle();
-                PrintBetAmount();
-                PrintHands();
+                PrintInfo();
 
                 Console.Write("Press any key to continue");
                 Console.ReadKey();
@@ -151,9 +148,7 @@ namespace ConsoleAppBlackJack
                     }
 
                     EvaluateHands();
-                    PrintTitle();
-                    PrintBetAmount();
-                    PrintHands();
+                    PrintInfo();
 
                     Console.Write("Press any key to continue");
                     Console.ReadKey();
@@ -191,9 +186,7 @@ namespace ConsoleAppBlackJack
 
                 Game.SaveData(player);
 
-                PrintTitle();
-                PrintBetAmount();
-                PrintHands();
+                PrintInfo();
 
                 var color = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -279,7 +272,7 @@ namespace ConsoleAppBlackJack
             hands.Clear();
             Hand hand = new Hand();
             int bet = 5;
-            PrintTitle();
+            PrintInfo();
             PrintBettingChoices();
 
             switch (GetInput().ToLower())
@@ -310,9 +303,7 @@ namespace ConsoleAppBlackJack
                 {
                     do
                     {
-                        PrintTitle();
-                        PrintBetAmount();
-                        PrintHands();
+                        PrintInfo();
 
                         if (hands.Count > 1)
                         {
@@ -376,7 +367,7 @@ namespace ConsoleAppBlackJack
 
         private static void GetPlayerInfo()
         {
-            PrintTitle();
+            PrintInfo();
             do
             {
                 PrintLoginMenu();
@@ -412,6 +403,21 @@ namespace ConsoleAppBlackJack
             return input;
         }
 
+        private static void PrintInfo()
+        {
+            PrintTitle();
+
+            if (player != null)
+            {
+                PrintPlayerInfo();
+            }
+            if (hands.Count > 0)
+            {
+                PrintBetAmount();
+                PrintHands();
+            }
+        }
+
         private static void PrintTitle()
         {
             Console.Clear();
@@ -420,11 +426,6 @@ namespace ConsoleAppBlackJack
             Console.WriteLine("BlackJack Console App v 1.0");
             Console.WriteLine("===========================");
             Console.ForegroundColor = color;
-
-            if (player != null)
-            {
-                PrintPlayerInfo();
-            }
         }
 
         private static void PrintPlayerInfo()
@@ -594,7 +595,7 @@ namespace ConsoleAppBlackJack
 
         private static void PrintRules()
         {
-            PrintTitle();
+            PrintInfo();
             Console.WriteLine();
             Console.WriteLine("Rules:");
             string rules = File.ReadAllText("C:/Projekt/XML/ConsoleAppBlackJack/rules.txt");
