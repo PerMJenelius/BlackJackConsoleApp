@@ -17,89 +17,64 @@ namespace ConsoleAppBlackJack
             Print.Info(hands, player);
             Print.LoginMenu();
             GetLoginChoice();
+
             do
             {
                 AskForNewRound();
                 AskForBet();
                 hands[0] = Game.DealStartingHand(hands[0]);
                 AskForAction();
-            } while (player.Bankroll > 0);
+            } while (player.Bankroll >= 5);
+
+            Print.Quit();
         }
 
         private static void RegisterPlayer()
         {
-            player = AskForPlayerName();
+            Console.WriteLine();
+            Console.Write("Please write your name: ");
+            string inputName = GetInput();
 
-            while (player.IsActive)
+            while (Player.PlayerNameExists(inputName))
             {
                 Console.WriteLine();
-                Console.WriteLine("Sorry, that name is taken.");
-                player = AskForPlayerName();
+                Console.Write("Sorry, that name is taken. Try again: ");
+                inputName = GetInput();
             }
 
-            active = true;
+            player = new Player(Player.GeneratePlayerId(), inputName);
             player.IsActive = true;
-            Game.SavePlayer(player);
+            Player.SavePlayer(player);
         }
 
         private static void Login()
         {
-            player = AskForPlayerName();
+            Console.WriteLine();
+            Console.Write("Please write your name: ");
+            string inputName = GetInput();
 
-            while (!player.IsActive)
+            while (!Player.PlayerNameExists(inputName))
             {
                 Console.WriteLine();
-                Console.WriteLine("Sorry, no player by that name was found.");
-                player = AskForPlayerName();
+                Console.Write("Sorry, no player by that name was found. Try again: ");
+                inputName = GetInput();
             }
-
-            active = true;
+            player = Player.GetPlayerByName(inputName);
+            player.IsActive = true;
+            Player.SavePlayer(player);
         }
 
-        private static Hand Double(Hand inputHand)
-        {
-            if (inputHand.PlayerHand.Count == 2)
-            {
-                player.Bankroll -= inputHand.Bet;
-                inputHand.Bet += inputHand.Bet;
-                inputHand.Stand = true;
-                inputHand.PlayerHand = Game.DealCard(inputHand.PlayerHand, 1);
-
-                hands = Game.EvaluateHands(hands);
-                Print.Info(hands, player);
-
-                Console.Write("Press any key to continue");
-                Console.ReadKey();
-            }
-            return inputHand;
-        }
-
-        private static void DealerRound()
-        {
-            do
-            {
-                var newHand = Game.DealCard(hands[0].DealerHand, 1);
-
-                for (int i = 0; i < hands.Count; i++)
-                {
-                    hands[i].DealerHand = newHand;
-                }
-
-                hands = Game.EvaluateHands(hands);
-                Print.Info(hands, player);
-
-                Console.Write("Press any key to continue");
-                Console.ReadKey();
-
-            } while (Game.Deal(hands));
-        }
-
-        public static void EndGame()
+        private static void EndGame()
         {
             for (int i = 0; i < hands.Count; i++)
             {
                 double result = Game.CompareHands(hands[i]);
-                hands[i] = Game.Payout(hands[i], player, result);
+
+                hands[i].TransactionAmount = result == 1 ? hands[i].Bet + hands[i].Insurance : hands[i].Bet;
+                player.Bankroll += hands[i].TransactionAmount;
+
+                player.Hands.Add(hands[i]);
+                Player.SaveData(player);
 
                 Print.Info(hands, player);
                 var color = Console.ForegroundColor;
@@ -143,15 +118,6 @@ namespace ConsoleAppBlackJack
             active = false;
         }
 
-        private static Player AskForPlayerName()
-        {
-            Console.WriteLine();
-            Console.Write("Please write your name: ");
-            string inputName = GetInput();
-
-            return Game.PlayerNameExists(inputName) ? Game.GetPlayerByName(inputName) : new Player(Game.GeneratePlayerId(), inputName);
-        }
-
         private static void AskForNewRound()
         {
             Print.NewGameMenu();
@@ -165,9 +131,10 @@ namespace ConsoleAppBlackJack
 
         private static void AskForBet()
         {
+            int bet = 0;
             hands.Clear();
             Hand hand = new Hand();
-            int bet = 0;
+
             Print.Info(hands, player);
             Print.BettingChoices(player);
 
@@ -184,7 +151,7 @@ namespace ConsoleAppBlackJack
             hand.Bet = bet;
             player.Bankroll -= bet;
             hands.Add(hand);
-            Game.SaveData(player);
+            Player.SaveData(player);
         }
 
         private static void AskForAction()
@@ -218,9 +185,9 @@ namespace ConsoleAppBlackJack
                             {
                                 case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
                                 case "s": hands[i].Stand = true; break;
-                                case "d": hands[i] = Double(hands[i]); break;
-                                case "p": Game.Split(hands, player); break;
-                                case "i": hands[i] = Game.Insurance(hands[i], player); break;
+                                case "d": hands[i] = Game.Double(hands[i]); player.Bankroll -= hands[i].Bet; break;
+                                case "p": Game.Split(hands, player); player.Bankroll -= hands[1].Bet; break;
+                                case "i": hands[i] = Game.Insurance(hands[i]); player.Bankroll -= hands[i].Insurance; break;
                                 default: hands[i].Stand = true; break;
                             }
                         }
@@ -236,7 +203,7 @@ namespace ConsoleAppBlackJack
                 }
                 if (active && Game.CheckForStand(hands))
                 {
-                    DealerRound();
+                    hands = Game.DealerRound(hands, player);
                     EndGame();
                 }
 

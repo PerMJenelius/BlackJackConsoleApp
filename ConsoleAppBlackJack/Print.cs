@@ -9,6 +9,14 @@ namespace ConsoleAppBlackJack
 {
     class Print
     {
+        public static void LoginMenu()
+        {
+            Console.WriteLine();
+            Console.WriteLine("[R]egister new player");
+            Console.WriteLine("[L]ogin");
+            Console.WriteLine("[S]how rules");
+        }
+
         public static void Rules()
         {
             Title();
@@ -26,7 +34,7 @@ namespace ConsoleAppBlackJack
 
             if (player != null)
             {
-                Print.PlayerInfo(player);
+                PlayerInfo(player);
             }
             if (hands.Count > 0)
             {
@@ -35,7 +43,14 @@ namespace ConsoleAppBlackJack
             }
         }
 
-        private static void BetAmount(List<Hand> hands)
+        public static void NewGameMenu()
+        {
+            Console.WriteLine();
+            Console.WriteLine("[D]eal a new hand");
+            Console.WriteLine("[Q]uit");
+        }
+
+        public static void BetAmount(List<Hand> hands)
         {
             double bet = 0;
 
@@ -53,7 +68,7 @@ namespace ConsoleAppBlackJack
             Console.WriteLine();
         }
 
-        private static void PlayerInfo(Player player)
+        public static void PlayerInfo(Player player)
         {
             ConsoleColor color = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.White;
@@ -63,11 +78,11 @@ namespace ConsoleAppBlackJack
             Console.ForegroundColor = color;
         }
 
-        private static void Title()
+        public static void Title()
         {
             Console.Clear();
             ConsoleColor color = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("BlackJack Console App v 1.0");
             Console.WriteLine("===========================");
             Console.ForegroundColor = color;
@@ -82,11 +97,11 @@ namespace ConsoleAppBlackJack
             {
                 Console.WriteLine("[D]ouble");
             }
-            if (!inputHand.Split && inputHand.PlayerHand.Count == 2 && inputHand.PlayerHand[0].Value == inputHand.PlayerHand[1].Value)
+            if (Game.MaySplit(inputHand))
             {
                 Console.WriteLine("S[P]lit");
             }
-            if (inputHand.PlayerHand.Count == 2 && inputHand.DealerHand.Count == 1 && inputHand.DealerHand[0].Rank == Rank.Ace && inputHand.Insurance == 0 && inputHand.Split == false)
+            if (Game.MayInsure(inputHand))
             {
                 Console.WriteLine("[I]nsurance");
             }
@@ -202,19 +217,10 @@ namespace ConsoleAppBlackJack
             Environment.Exit(1);
         }
 
-        public static void NewGameMenu()
+        public static void ContinuePrompt()
         {
-            Console.WriteLine();
-            Console.WriteLine("[D]eal a new hand");
-            Console.WriteLine("[Q]uit");
-        }
-
-        public static void LoginMenu()
-        {
-            Console.WriteLine();
-            Console.WriteLine("[R]egister new player");
-            Console.WriteLine("[L]ogin");
-            Console.WriteLine("[S]how rules");
+            Console.Write("Press any key to continue");
+            Console.ReadKey();
         }
     }
 }
