@@ -17,7 +17,7 @@ namespace ConsoleAppBlackJack
             ID = id;
             Name = name;
             Bankroll = 10000;
-            IsActive = false;
+            IsActive = true;
             Hands = new List<Hand>();
         }
 

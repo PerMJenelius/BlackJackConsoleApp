@@ -1,30 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace ConsoleAppBlackJack
 {
     class Program
     {
-        static Player player;
+        static List<Player> players = new List<Player>();
         static List<Hand> hands = new List<Hand>();
         static bool active = false;
 
         static void Main(string[] args)
         {
-            Print.Info(hands, player);
+            Print.Title();
             Print.LoginMenu();
             GetLoginChoice();
+            players.Add(Tyler.GetTyler());
 
             do
             {
                 AskForNewRound();
                 AskForBet();
                 hands[0] = Game.DealStartingHand(hands[0]);
+                Tyler.AskForBet(hands[0]);
                 AskForAction();
-            } while (player.Bankroll >= 5);
+                Tyler.AskForAction(hands);
+            } while (players[0].Bankroll >= 5);
 
             Print.Quit();
         }
@@ -42,9 +42,8 @@ namespace ConsoleAppBlackJack
                 inputName = GetInput();
             }
 
-            player = new Player(Player.GeneratePlayerId(), inputName);
-            player.IsActive = true;
-            Player.SavePlayer(player);
+            players.Add(new Player(Player.GeneratePlayerId(), inputName));
+            Player.SavePlayer(players[0]);
         }
 
         private static void Login()
@@ -59,9 +58,8 @@ namespace ConsoleAppBlackJack
                 Console.Write("Sorry, no player by that name was found. Try again: ");
                 inputName = GetInput();
             }
-            player = Player.GetPlayerByName(inputName);
-            player.IsActive = true;
-            Player.SavePlayer(player);
+            players.Add(Player.GetPlayerByName(inputName));
+            Player.SavePlayer(players[0]);
         }
 
         private static void EndGame()
@@ -71,12 +69,12 @@ namespace ConsoleAppBlackJack
                 double result = Game.CompareHands(hands[i]);
 
                 hands[i].TransactionAmount = result == 1 ? hands[i].Bet + hands[i].Insurance : hands[i].Bet;
-                player.Bankroll += hands[i].TransactionAmount;
+                players[0].Bankroll += hands[i].TransactionAmount;
 
-                player.Hands.Add(hands[i]);
-                Player.SaveData(player);
+                players[0].Hands.Add(hands[i]);
+                Player.SaveData(players[0]);
 
-                Print.Info(hands, player);
+                Print.Info(hands, players[0]);
                 var color = Console.ForegroundColor;
                 Console.ForegroundColor = ConsoleColor.Red;
 
@@ -135,8 +133,8 @@ namespace ConsoleAppBlackJack
             hands.Clear();
             Hand hand = new Hand();
 
-            Print.Info(hands, player);
-            Print.BettingChoices(player);
+            Print.Info(hands, players[0]);
+            Print.BettingChoices(players[0]);
 
             switch (GetInput().ToLower())
             {
@@ -149,9 +147,9 @@ namespace ConsoleAppBlackJack
             }
 
             hand.Bet = bet;
-            player.Bankroll -= bet;
+            players[0].Bankroll -= bet;
             hands.Add(hand);
-            Player.SaveData(player);
+            Player.SaveData(players[0]);
         }
 
         private static void AskForAction()
@@ -166,7 +164,7 @@ namespace ConsoleAppBlackJack
                 {
                     do
                     {
-                        Print.Info(hands, player);
+                        Print.Info(hands, players[0]);
 
                         if (hands.Count > 1)
                         {
@@ -185,9 +183,9 @@ namespace ConsoleAppBlackJack
                             {
                                 case "h": hands[i].PlayerHand = Game.DealCard(hands[i].PlayerHand, 1); break;
                                 case "s": hands[i].Stand = true; break;
-                                case "d": hands[i] = Game.Double(hands[i]); player.Bankroll -= hands[i].Bet; break;
-                                case "p": Game.Split(hands, player); player.Bankroll -= hands[1].Bet; break;
-                                case "i": hands[i] = Game.Insurance(hands[i]); player.Bankroll -= hands[i].Insurance; break;
+                                case "d": hands[i] = Game.Double(hands[i]); players[0].Bankroll -= hands[i].Bet; break;
+                                case "p": Game.Split(hands, players[0]); players[0].Bankroll -= hands[1].Bet; break;
+                                case "i": hands[i] = Game.Insurance(hands[i]); players[0].Bankroll -= hands[i].Insurance; break;
                                 default: hands[i].Stand = true; break;
                             }
                         }
@@ -203,7 +201,7 @@ namespace ConsoleAppBlackJack
                 }
                 if (active && Game.CheckForStand(hands))
                 {
-                    hands = Game.DealerRound(hands, player);
+                    hands = Game.DealerRound(hands, players[0]);
                     EndGame();
                 }
 

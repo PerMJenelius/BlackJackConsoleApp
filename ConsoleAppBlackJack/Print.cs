@@ -135,6 +135,8 @@ namespace ConsoleAppBlackJack
             Console.WriteLine(")");
             Console.WriteLine();
 
+            var color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("You have:");
 
             for (int i = 0; i < hands.Count; i++)
@@ -163,6 +165,42 @@ namespace ConsoleAppBlackJack
                 if (hands[i].PlayerHandSoftValue > hands[i].PlayerHandValue && hands[i].PlayerHandSoftValue <= 21)
                 {
                     Console.Write($" or {hands[i].PlayerHandSoftValue}");
+                }
+
+                Console.WriteLine(")");
+            }
+            Console.WriteLine();
+            Console.ForegroundColor = color;
+
+            var tylersHands = Tyler.GetTylersHands();
+            Console.WriteLine("Tyler has:");
+
+            for (int i = 0; i < tylersHands.Count; i++)
+            {
+                if (tylersHands.Count > 1)
+                {
+                    Console.Write($"({i + 1}) ");
+                }
+
+                for (int j = 0; j < tylersHands[i].PlayerHand.Count; j++)
+                {
+                    Console.Write($"{tylersHands[i].PlayerHand[j].Rank} of {tylersHands[i].PlayerHand[j].Suit}");
+
+                    if (j < (tylersHands[i].PlayerHand.Count - 2))
+                    {
+                        Console.Write(", ");
+                    }
+                    else if (j < (tylersHands[i].PlayerHand.Count - 1))
+                    {
+                        Console.Write(" and ");
+                    }
+                }
+
+                Console.Write($" ({tylersHands[i].PlayerHandValue}");
+
+                if (tylersHands[i].PlayerHandSoftValue > tylersHands[i].PlayerHandValue && tylersHands[i].PlayerHandSoftValue <= 21)
+                {
+                    Console.Write($" or {tylersHands[i].PlayerHandSoftValue}");
                 }
 
                 Console.WriteLine(")");
