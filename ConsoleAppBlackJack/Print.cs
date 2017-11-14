@@ -170,6 +170,7 @@ namespace ConsoleAppBlackJack
                 Console.WriteLine(")");
             }
             Console.WriteLine();
+            Console.ForegroundColor = color;
         }
 
         public static void BettingChoices(Player player)
