@@ -14,16 +14,13 @@ namespace ConsoleAppBlackJack
             Print.Title();
             Print.LoginMenu();
             GetLoginChoice();
-            players.Add(Tyler.GetTyler());
 
             do
             {
                 AskForNewRound();
                 AskForBet();
                 hands[0] = Game.DealStartingHand(hands[0]);
-                Tyler.AskForBet(hands[0]);
                 AskForAction();
-                Tyler.AskForAction(hands);
             } while (players[0].Bankroll >= 5);
 
             Print.Quit();
@@ -58,8 +55,8 @@ namespace ConsoleAppBlackJack
                 Console.Write("Sorry, no player by that name was found. Try again: ");
                 inputName = GetInput();
             }
-            players.Add(Player.GetPlayerByName(inputName));
-            Player.SavePlayer(players[0]);
+            Player player = Player.GetPlayerByName(inputName);
+            players.Add(player);
         }
 
         private static void EndGame()
@@ -68,7 +65,7 @@ namespace ConsoleAppBlackJack
             {
                 double result = Game.CompareHands(hands[i]);
 
-                hands[i].TransactionAmount = result == 1 ? hands[i].Bet + hands[i].Insurance : hands[i].Bet;
+                hands[i].TransactionAmount = result == 1 ? hands[i].Bet + hands[i].Insurance : result * hands[i].Bet;
                 players[0].Bankroll += hands[i].TransactionAmount;
 
                 players[0].Hands.Add(hands[i]);
@@ -217,6 +214,7 @@ namespace ConsoleAppBlackJack
                 case "r": RegisterPlayer(); break;
                 case "l": Login(); break;
                 case "s": Print.Rules(); break;
+                default: Print.Quit(); break;
             }
         }
 
