@@ -11,8 +11,6 @@ namespace ConsoleAppBlackJack
 
         static void Main(string[] args)
         {
-            Print.Title();
-            Print.LoginMenu();
             GetLoginChoice();
 
             do
@@ -207,15 +205,20 @@ namespace ConsoleAppBlackJack
 
         private static void GetLoginChoice()
         {
-            string input = GetInput().ToLower();
-
-            switch (input)
+            do
             {
-                case "r": RegisterPlayer(); break;
-                case "l": Login(); break;
-                case "s": Print.Rules(); break;
-                default: Print.Quit(); break;
-            }
+                Print.Title();
+                Print.LoginMenu();
+
+                string input = GetInput().ToLower();
+
+                switch (input)
+                {
+                    case "r": RegisterPlayer(); break;
+                    case "l": Login(); break;
+                    case "s": Print.Rules(); break;
+                }
+            } while (players.Count < 1);
         }
 
         private static string GetInput()
